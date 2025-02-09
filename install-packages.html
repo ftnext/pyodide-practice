@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"></script>
+  </head>
+  <body>
+    Pyodide test page (<a href="https://pyodide.org/en/stable/usage/loading-packages.html#installing-packages" target="_blank" rel="noreferrer">Installing packages</a>)<br>
+    Open your browser console to see Pyodide output
+    <script type="text/javascript">
+      console.log("JavaScript is running");
+
+      async function main() {
+        let pyodide = await loadPyodide();
+        console.log("Pyodide is ready");
+
+        await pyodide.loadPackage("micropip");
+        const micropip = pyodide.pyimport("micropip");
+
+        console.log("Use snowballstemmer ...");
+        await micropip.install("snowballstemmer");
+        pyodide.runPython(`
+            import snowballstemmer
+            stemmer = snowballstemmer.stemmer("english")
+            print(stemmer.stemWords("go goes going gone".split()))
+        `);
+
+        console.log("Use emi-re ...");
+        await micropip.install("emi-re");
+        pyodide.runPython(`
+            import emire
+            print(emire.remove_spaces("Algorithm C ないしは アルゴリズム C"))
+        `);
+      }
+
+      main();
+    </script>
+  </body>
+</html>
