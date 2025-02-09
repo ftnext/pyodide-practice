@@ -1,0 +1,22 @@
+name: Publish on GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy static HTML
+        run: cp -R src tmp
+      - name: Publish on GitHub Pages branch
+        uses: ftnext/action-push-ghpages@v1.0.0
+        with:
+          build_dir: tmp
+          github_token: ${{ secrets.GITHUB_TOKEN }}
