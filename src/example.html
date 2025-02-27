@@ -8,7 +8,7 @@
     <p>
       You can execute any Python code. Just enter something in the box below and click the button.
     </p>
-    <textarea id="code" value="sum([1, 2, 3, 4, 5])" ></textarea>
+    <textarea id="code"></textarea>
     <button onclick="evaluatePython()">Run</button>
     <br>
     <br>
@@ -18,6 +18,14 @@
     <script>
       const output = document.getElementById("output");
       const code = document.getElementById("code");
+
+      if (window.location.hash !== "") {
+        const b64 = window.location.hash.slice(1);  // Omit first '#'
+        const decodedCode = atob(b64);
+        code.value = decodedCode;
+      } else {
+        code.value = "sum([1, 2, 3, 4, 5])";
+      }
 
       function addToOutput(s) {
         output.value += ">>> " + code.value + "\n" + s + "\n";
