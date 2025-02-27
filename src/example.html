@@ -8,12 +8,12 @@
     <p>
       You can execute any Python code. Just enter something in the box below and click the button.
     </p>
-    <textarea id="code"></textarea>
+    <textarea id="code" style="width: 50%;" rows="6"></textarea>
     <button onclick="evaluatePython()">Run</button>
     <br>
     <br>
     <div>Output:</div>
-    <textarea id="output" style="width: 100%;" rows="6" disabled></textarea>
+    <textarea id="output" style="width: 50%;" rows="6" disabled></textarea>
 
     <script>
       const output = document.getElementById("output");
@@ -28,24 +28,32 @@
       }
 
       function addToOutput(s) {
-        output.value += ">>> " + code.value + "\n" + s + "\n";
+        output.value += s + "\n";
       }
 
-      output.value = "Initializing ...\n";
+      addToOutput("Initializing ...");
       async function initPyodide() {
         let pyodide = await loadPyodide();
-        output.value += "Ready!\n";
+        addToOutput("Ready!");
         return pyodide;
       }
       let pyodideReadyPromise = initPyodide();
 
       async function evaluatePython() {
         let pyodide = await pyodideReadyPromise;
+        const stdoutOutputs = [];
+        pyodide.setStdout({ batched: (msg) => stdoutOutputs.push(msg) });
+
+        addToOutput(">>> " + code.value);
         try {
-            let output = pyodide.runPython(code.value);
-            addToOutput(output);
+          const codeOutput = pyodide.runPython(code.value);
+
+          stdoutOutputs.forEach((output) => addToOutput(output));
+          if (codeOutput !== undefined) {
+            addToOutput(codeOutput);
+          }
         } catch (err) {
-            addToOutput(err);
+          addToOutput(err);
         }
       }
     </script>
