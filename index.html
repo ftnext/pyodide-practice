@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"></script>
+  </head>
+  <body>
+    Pyodide test page (<a href="https://pyodide.org/en/stable/usage/quickstart.html#complete-example" target="_blank" rel="noreferrer">Complete example</a>) <br>
+    Open your browser console to see Pyodide output
+    <script type="text/javascript">
+      console.log("JavaScript is running");
+
+      async function main() {
+        console.log("main function started");
+        let pyodide = await loadPyodide();
+        console.log("Pyodide is ready");
+        console.log(pyodide.runPython(`
+            import sys
+            sys.version
+        `));
+        pyodide.runPython('print(f"{1+2=}")');
+      }
+
+      main();
+    </script>
+  </body>
+</html>

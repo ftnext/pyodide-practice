@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js"></script>
+  </head>
+
+  <body>
+    <p>
+      You can execute any Python code. Just enter something in the box below and click the button.
+    </p>
+    <textarea id="code" style="width: 50%;" rows="6"></textarea>
+    <button onclick="evaluatePython()">Run</button>
+    <br>
+    <br>
+    <div>Output:</div>
+    <textarea id="output" style="width: 50%;" rows="6" disabled></textarea>
+
+    <script>
+      const output = document.getElementById("output");
+      const code = document.getElementById("code");
+
+      if (window.location.hash !== "") {
+        const b64 = window.location.hash.slice(1);  // Omit first '#'
+        const decodedCode = atob(b64);
+        code.value = decodedCode;
+      } else {
+        code.value = "sum([1, 2, 3, 4, 5])";
+      }
+
+      function addToOutput(s) {
+        output.value += s + "\n";
+      }
+
+      addToOutput("Initializing ...");
+      async function initPyodide() {
+        let pyodide = await loadPyodide();
+        addToOutput("Ready!");
+        return pyodide;
+      }
+      let pyodideReadyPromise = initPyodide();
+
+      async function evaluatePython() {
+        let pyodide = await pyodideReadyPromise;
+        const stdoutOutputs = [];
+        pyodide.setStdout({ batched: (msg) => stdoutOutputs.push(msg) });
+
+        addToOutput(">>> " + code.value);
+        try {
+          const codeOutput = pyodide.runPython(code.value);
+
+          stdoutOutputs.forEach((output) => addToOutput(output));
+          if (codeOutput !== undefined) {
+            addToOutput(codeOutput);
+          }
+        } catch (err) {
+          addToOutput(err);
+        }
+      }
+    </script>
+</body>
+</html>
