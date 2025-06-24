@@ -12,8 +12,14 @@ author = 'nikkie'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+import os
+import sys
 
-extensions = []
+sys.path.insert(0, os.path.abspath("extensions"))
+
+extensions = [
+    "pyodide_code_block"
+]
 
 templates_path = ['_templates']
 exclude_patterns = []
