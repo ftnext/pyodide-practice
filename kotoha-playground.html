@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js"></script>
+  </head>
+
+  <body>
+    <p>
+      You can execute any Python code. Just enter something in the box below and click the button.
+    </p>
+    <textarea id="code" style="width: 50%;" rows="6"></textarea>
+    <button onclick="runFlake8()">Run</button>
+    <br>
+    <br>
+    <div>Output:</div>
+    <textarea id="output" style="width: 50%;" rows="6" disabled></textarea>
+
+    <script>
+      const output = document.getElementById("output");
+      const code = document.getElementById("code");
+
+      if (window.location.hash !== "") {
+        const b64 = window.location.hash.slice(1);  // Omit first '#'
+        const decodedCode = atob(b64);
+        code.value = decodedCode;
+      } else {
+        code.value = "sum([1, 2, 3, 4, 5])";
+      }
+
+      function addToOutput(s) {
+        output.value += s + "\n";
+      }
+
+      addToOutput("Initializing ...");
+      async function initPyodide() {
+        let pyodide = await loadPyodide();
+        addToOutput("Ready!");
+        return pyodide;
+      }
+      let pyodideReadyPromise = initPyodide();
+
+      async function runFlake8() {
+        let pyodide = await pyodideReadyPromise;
+        addToOutput("Pyodide loaded");
+
+        await pyodide.loadPackage("micropip");
+        const micropip = pyodide.pyimport("micropip");
+        addToOutput("micropip imported");
+        await micropip.install("flake8-kotoha");
+        addToOutput("flake8-kotoha installed");
+        addToOutput("");
+
+        const codeString = code.value.replaceAll("\n", "\\n")
+        pyodide.runPython(`
+        with open("test.py", "w") as f:
+            f.write("""${codeString}""")
+        `);
+        const stdouts = [];
+        const stderrs = [];
+        pyodide.setStdout({ batched: (msg) => stdouts.push(msg) });
+        pyodide.setStderr({ batched: (msg) => stderrs.push(msg) });
+
+        console.log("Run flake8 ...");
+        pyodide.runPython(`
+            from flake8.main.application import Application
+            app = Application()
+            app.run(["test.py"])
+            for result in app.file_checker_manager.results:
+                print()
+                # print(f"{result[1][0][0]}: {result[1][0][3]}")
+        `);
+        stdouts.forEach((output) => addToOutput(output));
+        stderrs.forEach((output) => addToOutput(output));
+        console.log("End flake8");
+      }
+    </script>
+</body>
+</html>
